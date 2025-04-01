@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Calendar, ChevronLeft } from 'lucide-react';
 import { 
   Drawer,
@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/drawer';
 import { useLanguage } from '@/hooks/use-language';
 import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-breakpoint';
 
 interface DateSelectorProps {
   years: number[];
@@ -28,50 +27,6 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   const { t } = useLanguage();
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-  const inactivityTimerRef = useRef<number | null>(null);
-  const isMobile = useIsMobile();
-
-  // Gérer l'affichage du bouton en fonction de l'activité
-  useEffect(() => {
-    // Fonction pour afficher le bouton
-    const showButton = () => {
-      setIsVisible(true);
-      
-      // Réinitialiser le timer d'inactivité
-      if (inactivityTimerRef.current !== null) {
-        window.clearTimeout(inactivityTimerRef.current);
-      }
-      
-      // Configurer un nouveau timer pour cacher le bouton après 3 secondes d'inactivité
-      // Sur mobile, on garde toujours le bouton visible
-      if (!isMobile) {
-        inactivityTimerRef.current = window.setTimeout(() => {
-          setIsVisible(false);
-        }, 3000);
-      }
-    };
-    
-    // Afficher le bouton au chargement initial
-    showButton();
-    
-    // Ajouter les écouteurs d'événements pour l'interaction utilisateur
-    window.addEventListener('scroll', showButton);
-    window.addEventListener('touchmove', showButton);
-    window.addEventListener('mousemove', showButton);
-    
-    // Nettoyer les écouteurs d'événements lors du démontage
-    return () => {
-      window.removeEventListener('scroll', showButton);
-      window.removeEventListener('touchmove', showButton);
-      window.removeEventListener('mousemove', showButton);
-      
-      // Nettoyer le timer d'inactivité
-      if (inactivityTimerRef.current !== null) {
-        window.clearTimeout(inactivityTimerRef.current);
-      }
-    };
-  }, [isMobile]);
 
   const handleSelectYear = useCallback((year: number) => {
     setSelectedYear(year);
@@ -98,30 +53,16 @@ const DateSelector: React.FC<DateSelectorProps> = ({
     return monthNames[month - 1] || '';
   };
 
-  // Styles spécifiques pour mobile avec z-index très élevé
-  const mobileButtonClasses = `fixed ${position === 'source' ? 'left-4' : 'right-4'} bottom-16 w-14 h-14 rounded-full bg-primary shadow-xl flex items-center justify-center z-[9999] border-2 border-background`;
-  
-  // Styles pour desktop
-  const desktopButtonClasses = `absolute bottom-4 right-4 bg-background/80 backdrop-blur-sm border border-border/50 shadow-md hover:bg-background/90 z-50 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`;
-  
-  // Appliquer les styles selon le type d'appareil
-  const buttonClasses = isMobile ? mobileButtonClasses : desktopButtonClasses;
-
-  // L'utilisateur est sur mobile, on utilise le Drawer avec un bouton de déclenchement plus visible
-  if (isMobile) {
-    console.log("DateSelector rendering mobile version", position);
-  }
-
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
         <Button 
-          variant={isMobile ? "default" : "ghost"} 
+          variant="ghost" 
           size="icon" 
-          className={buttonClasses}
+          className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm border border-border/50 shadow-md hover:bg-background/90 z-50"
           aria-label={t('select_date')}
         >
-          <Calendar className={isMobile ? "h-8 w-8 text-background" : "h-5 w-5"} />
+          <Calendar className="h-5 w-5" />
         </Button>
       </DrawerTrigger>
       <DrawerContent className="max-h-[85vh]">
