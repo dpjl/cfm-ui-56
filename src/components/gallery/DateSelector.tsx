@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Calendar, ChevronLeft } from 'lucide-react';
 import { 
   Drawer,
@@ -27,6 +27,16 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   const { t } = useLanguage();
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [forceRender, setForceRender] = useState(false);
+
+  // Force le rendu initial du bouton
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setForceRender(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSelectYear = useCallback((year: number) => {
     setSelectedYear(year);
@@ -59,7 +69,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({
         <Button 
           variant="ghost" 
           size="icon" 
-          className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm border border-border/50 shadow-md hover:bg-background/90 z-50"
+          className={`absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm border border-border/50 shadow-md hover:bg-background/90 z-50 ${forceRender ? '' : ''}`}
           aria-label={t('select_date')}
         >
           <Calendar className="h-5 w-5" />
