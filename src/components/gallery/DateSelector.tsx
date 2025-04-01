@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Calendar, ChevronLeft } from 'lucide-react';
 import { 
   Drawer,
@@ -27,15 +27,45 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   const { t } = useLanguage();
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [forceRender, setForceRender] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const inactivityTimerRef = useRef<number | null>(null);
 
-  // Force le rendu initial du bouton
+  // Gérer l'affichage du bouton en fonction de l'activité
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setForceRender(true);
-    }, 100);
+    // Fonction pour afficher le bouton
+    const showButton = () => {
+      setIsVisible(true);
+      
+      // Réinitialiser le timer d'inactivité
+      if (inactivityTimerRef.current !== null) {
+        window.clearTimeout(inactivityTimerRef.current);
+      }
+      
+      // Configurer un nouveau timer pour cacher le bouton après 3 secondes d'inactivité
+      inactivityTimerRef.current = window.setTimeout(() => {
+        setIsVisible(false);
+      }, 3000);
+    };
     
-    return () => clearTimeout(timer);
+    // Afficher le bouton au chargement initial
+    showButton();
+    
+    // Ajouter les écouteurs d'événements pour l'interaction utilisateur
+    window.addEventListener('scroll', showButton);
+    window.addEventListener('touchmove', showButton);
+    window.addEventListener('mousemove', showButton);
+    
+    // Nettoyer les écouteurs d'événements lors du démontage
+    return () => {
+      window.removeEventListener('scroll', showButton);
+      window.removeEventListener('touchmove', showButton);
+      window.removeEventListener('mousemove', showButton);
+      
+      // Nettoyer le timer d'inactivité
+      if (inactivityTimerRef.current !== null) {
+        window.clearTimeout(inactivityTimerRef.current);
+      }
+    };
   }, []);
 
   const handleSelectYear = useCallback((year: number) => {
@@ -69,7 +99,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({
         <Button 
           variant="ghost" 
           size="icon" 
-          className={`absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm border border-border/50 shadow-md hover:bg-background/90 z-50 ${forceRender ? '' : ''}`}
+          className={`absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm border border-border/50 shadow-md hover:bg-background/90 z-50 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
           aria-label={t('select_date')}
         >
           <Calendar className="h-5 w-5" />
