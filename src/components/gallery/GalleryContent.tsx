@@ -73,7 +73,7 @@ const GalleryContent: React.FC<GalleryContentProps> = ({
   }
   
   return (
-    <div ref={containerRef} className="h-full w-full">
+    <div ref={containerRef} className="h-full w-full relative">
       <Gallery
         title={title}
         mediaResponse={mediaResponse}

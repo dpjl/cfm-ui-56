@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useRef } from 'react';
 import { useLanguage } from '@/hooks/use-language';
 import VirtualizedGalleryGrid from './VirtualizedGalleryGrid';
@@ -13,6 +12,8 @@ import { useGalleryMediaHandler } from '@/hooks/use-gallery-media-handler';
 import MediaInfoPanel from '../media/MediaInfoPanel';
 import { useIsMobile } from '@/hooks/use-breakpoint';
 import { MediaItem, GalleryViewMode, MediaListResponse } from '@/types/gallery';
+import { useMediaDates } from '@/hooks/use-media-dates';
+import DateSelector from './DateSelector';
 
 interface GalleryProps {
   title: string;
@@ -58,6 +59,8 @@ const Gallery: React.FC<GalleryProps> = ({
   const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
   const mediaIds = mediaResponse?.mediaIds || [];
+  
+  const { dateIndex } = useMediaDates(mediaResponse);
   
   const selection = useGallerySelection({
     mediaIds,
@@ -116,6 +119,12 @@ const Gallery: React.FC<GalleryProps> = ({
     return false;
   };
   
+  const handleSelectYearMonth = (year: number, month: number) => {
+    if (containerRef.current && mediaResponse) {
+      console.log(`Scrolling to ${year}-${month} in ${position} gallery`);
+    }
+  };
+  
   return (
     <div className="flex flex-col h-full relative" ref={containerRef}>
       <GalleryToolbar
@@ -151,16 +160,27 @@ const Gallery: React.FC<GalleryProps> = ({
         {mediaIds.length === 0 ? (
           <GalleryEmptyState />
         ) : (
-          <VirtualizedGalleryGrid
-            mediaResponse={mediaResponse}
-            selectedIds={selectedIds}
-            onSelectId={selection.handleSelectItem}
-            columnsCount={columnsCount}
-            viewMode={viewMode}
-            updateMediaInfo={updateMediaInfo}
-            position={position}
-            gap={gap}
-          />
+          <>
+            <VirtualizedGalleryGrid
+              mediaResponse={mediaResponse}
+              selectedIds={selectedIds}
+              onSelectId={selection.handleSelectItem}
+              columnsCount={columnsCount}
+              viewMode={viewMode}
+              updateMediaInfo={updateMediaInfo}
+              position={position}
+              gap={gap}
+            />
+            
+            {dateIndex.years.length > 0 && (
+              <DateSelector
+                years={dateIndex.years}
+                monthsByYear={dateIndex.monthsByYear}
+                onSelectYearMonth={handleSelectYearMonth}
+                position={position}
+              />
+            )}
+          </>
         )}
       </div>
       

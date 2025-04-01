@@ -54,61 +54,63 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={setIsOpen}>
-      <DrawerTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm border border-border/50 shadow-md hover:bg-background/90 z-50"
-          aria-label={t('select_date')}
-        >
-          <Calendar className="h-5 w-5" />
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent className="max-h-[85vh]">
-        <DrawerHeader>
-          <DrawerTitle className="flex items-center gap-2">
-            {selectedYear !== null && (
-              <Button variant="ghost" size="sm" onClick={handleBackToYears} className="p-1">
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
+    <div className="date-selector-container">
+      <Drawer open={isOpen} onOpenChange={setIsOpen}>
+        <DrawerTrigger asChild>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="date-selector-button"
+            aria-label={t('select_date')}
+          >
+            <Calendar className="h-5 w-5" />
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent className="max-h-[85vh]">
+          <DrawerHeader>
+            <DrawerTitle className="flex items-center gap-2">
+              {selectedYear !== null && (
+                <Button variant="ghost" size="sm" onClick={handleBackToYears} className="p-1">
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+              )}
+              {selectedYear !== null
+                ? `${selectedYear} - ${t('select_date')}`
+                : t('select_date')}
+            </DrawerTitle>
+          </DrawerHeader>
+          <div className="p-4 overflow-y-auto max-h-[70vh]">
+            {selectedYear === null ? (
+              <div className="grid grid-cols-3 gap-2">
+                {years.map(year => (
+                  <Button 
+                    key={year} 
+                    variant="outline"
+                    onClick={() => handleSelectYear(year)}
+                    className="h-14"
+                  >
+                    {year}
+                  </Button>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2">
+                {monthsByYear.get(selectedYear)?.map(month => (
+                  <Button
+                    key={month}
+                    variant="outline"
+                    onClick={() => handleSelectMonth(month)}
+                    className="h-14"
+                  >
+                    {getMonthName(month)}
+                  </Button>
+                ))}
+              </div>
             )}
-            {selectedYear !== null
-              ? `${selectedYear} - ${t('select_date')}`
-              : t('select_date')}
-          </DrawerTitle>
-        </DrawerHeader>
-        <div className="p-4 overflow-y-auto max-h-[70vh]">
-          {selectedYear === null ? (
-            <div className="grid grid-cols-3 gap-2">
-              {years.map(year => (
-                <Button 
-                  key={year} 
-                  variant="outline"
-                  onClick={() => handleSelectYear(year)}
-                  className="h-14"
-                >
-                  {year}
-                </Button>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-3 gap-2">
-              {monthsByYear.get(selectedYear)?.map(month => (
-                <Button
-                  key={month}
-                  variant="outline"
-                  onClick={() => handleSelectMonth(month)}
-                  className="h-14"
-                >
-                  {getMonthName(month)}
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
-      </DrawerContent>
-    </Drawer>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    </div>
   );
 };
 
