@@ -98,24 +98,30 @@ const DateSelector: React.FC<DateSelectorProps> = ({
     return monthNames[month - 1] || '';
   };
 
-  // Styles de base pour le bouton
-  const baseButtonClasses = "bg-background/80 backdrop-blur-sm border border-border/50 shadow-md hover:bg-background/90 z-50 transition-opacity duration-300";
+  // Styles spécifiques pour mobile avec z-index très élevé
+  const mobileButtonClasses = `fixed ${position === 'source' ? 'left-4' : 'right-4'} bottom-16 w-14 h-14 rounded-full bg-primary shadow-xl flex items-center justify-center z-[9999] border-2 border-background`;
   
-  // Styles conditionnels selon le type d'appareil
-  const buttonClasses = isMobile 
-    ? `${baseButtonClasses} fixed ${position === 'source' ? 'left-4' : 'right-4'} bottom-4 opacity-100 w-12 h-12 flex items-center justify-center` 
-    : `${baseButtonClasses} absolute bottom-2 right-2 ${isVisible ? 'opacity-100' : 'opacity-0'}`;
+  // Styles pour desktop
+  const desktopButtonClasses = `absolute bottom-4 right-4 bg-background/80 backdrop-blur-sm border border-border/50 shadow-md hover:bg-background/90 z-50 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`;
+  
+  // Appliquer les styles selon le type d'appareil
+  const buttonClasses = isMobile ? mobileButtonClasses : desktopButtonClasses;
+
+  // L'utilisateur est sur mobile, on utilise le Drawer avec un bouton de déclenchement plus visible
+  if (isMobile) {
+    console.log("DateSelector rendering mobile version", position);
+  }
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
         <Button 
-          variant="ghost" 
+          variant={isMobile ? "default" : "ghost"} 
           size="icon" 
           className={buttonClasses}
           aria-label={t('select_date')}
         >
-          <Calendar className={isMobile ? "h-6 w-6" : "h-5 w-5"} />
+          <Calendar className={isMobile ? "h-8 w-8 text-background" : "h-5 w-5"} />
         </Button>
       </DrawerTrigger>
       <DrawerContent className="max-h-[85vh]">
