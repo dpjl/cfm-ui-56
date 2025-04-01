@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/drawer';
 import { useLanguage } from '@/hooks/use-language';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-breakpoint';
 
 interface DateSelectorProps {
   years: number[];
@@ -29,6 +30,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const inactivityTimerRef = useRef<number | null>(null);
+  const isMobile = useIsMobile();
 
   // Gérer l'affichage du bouton en fonction de l'activité
   useEffect(() => {
@@ -42,9 +44,12 @@ const DateSelector: React.FC<DateSelectorProps> = ({
       }
       
       // Configurer un nouveau timer pour cacher le bouton après 3 secondes d'inactivité
-      inactivityTimerRef.current = window.setTimeout(() => {
-        setIsVisible(false);
-      }, 3000);
+      // Sur mobile, on garde toujours le bouton visible
+      if (!isMobile) {
+        inactivityTimerRef.current = window.setTimeout(() => {
+          setIsVisible(false);
+        }, 3000);
+      }
     };
     
     // Afficher le bouton au chargement initial
@@ -66,7 +71,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({
         window.clearTimeout(inactivityTimerRef.current);
       }
     };
-  }, []);
+  }, [isMobile]);
 
   const handleSelectYear = useCallback((year: number) => {
     setSelectedYear(year);
@@ -93,16 +98,24 @@ const DateSelector: React.FC<DateSelectorProps> = ({
     return monthNames[month - 1] || '';
   };
 
+  // Styles de base pour le bouton
+  const baseButtonClasses = "bg-background/80 backdrop-blur-sm border border-border/50 shadow-md hover:bg-background/90 z-50 transition-opacity duration-300";
+  
+  // Styles conditionnels selon le type d'appareil
+  const buttonClasses = isMobile 
+    ? `${baseButtonClasses} fixed ${position === 'source' ? 'left-4' : 'right-4'} bottom-4 opacity-100 w-12 h-12 flex items-center justify-center` 
+    : `${baseButtonClasses} absolute bottom-2 right-2 ${isVisible ? 'opacity-100' : 'opacity-0'}`;
+
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
         <Button 
           variant="ghost" 
           size="icon" 
-          className={`absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm border border-border/50 shadow-md hover:bg-background/90 z-50 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+          className={buttonClasses}
           aria-label={t('select_date')}
         >
-          <Calendar className="h-5 w-5" />
+          <Calendar className={isMobile ? "h-6 w-6" : "h-5 w-5"} />
         </Button>
       </DrawerTrigger>
       <DrawerContent className="max-h-[85vh]">
